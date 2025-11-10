@@ -128,7 +128,7 @@ Module.register("MMM-HomeConnect", {
   getDom() {
     const div = document.createElement("div");
     let wrapper = "";
-    _self = this;
+    const _self = this;
 
     // Show authentication info if available
     if (this.authInfo && this.authInfo.status === "waiting") {

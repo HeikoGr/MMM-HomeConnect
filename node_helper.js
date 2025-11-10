@@ -181,6 +181,7 @@ module.exports = NodeHelper.create({
   initializationAttempts: 0,
   maxInitAttempts: 3,
   instanceId: null,
+  subscribed: false,
 
   init () {
     console.log("init module helper: MMM-HomeConnect (Session-Based Version)");
@@ -466,7 +467,12 @@ module.exports = NodeHelper.create({
         fs.writeFileSync("./modules/MMM-HomeConnect/refresh_token.json", refresh_token);
         console.log("🔄 Refresh token updated");
         globalSession.refreshToken = refresh_token;
-        _self.getDevices();
+        // Only fetch devices if not yet subscribed (initial setup)
+        if (!_self.subscribed) {
+          _self.getDevices();
+        } else {
+          console.log("ℹ️ Token updated - devices already loaded, skipping getDevices()");
+        }
       });
     });
   },
@@ -533,7 +539,12 @@ module.exports = NodeHelper.create({
       fs.writeFileSync("./modules/MMM-HomeConnect/refresh_token.json", refresh_token);
       console.log("🔄 OAuth refresh token updated and saved");
       globalSession.refreshToken = refresh_token;
-      _self.getDevices();
+      // Only fetch devices if not yet subscribed (initial setup)
+      if (!_self.subscribed) {
+        _self.getDevices();
+      } else {
+        console.log("ℹ️ Token updated - devices already loaded, skipping getDevices()");
+      }
     });
   },
 
@@ -596,16 +607,22 @@ module.exports = NodeHelper.create({
           }
         });
 
-        console.log("📡 Subscribing to device events...");
-        _self.hc.subscribe("NOTIFY", (e) => {
-          _self.deviceEvent(e);
-        });
-        _self.hc.subscribe("STATUS", (e) => {
-          _self.deviceEvent(e);
-        });
-        _self.hc.subscribe("EVENT", (e) => {
-          _self.deviceEvent(e);
-        });
+        if (!_self.subscribed) {
+          console.log("📡 Subscribing to device events...");
+          _self.hc.subscribe("NOTIFY", (e) => {
+            _self.deviceEvent(e);
+          });
+          _self.hc.subscribe("STATUS", (e) => {
+            _self.deviceEvent(e);
+          });
+          _self.hc.subscribe("EVENT", (e) => {
+            _self.deviceEvent(e);
+          });
+          _self.subscribed = true;
+          console.log("✅ Event subscriptions established");
+        } else {
+          console.log("ℹ️ Already subscribed to device events - skipping duplicate subscription");
+        }
 
         const array = [..._self.devices.entries()];
         let sortedArray = array.sort((a, b) => (a[1].name > b[1].name ? 1 : -1));
@@ -648,6 +665,7 @@ module.exports = NodeHelper.create({
     this.initializationAttempts = 0;
     this.hc = null;
     this.devices.clear();
+    this.subscribed = false;
 
     if (fs.existsSync("./modules/MMM-HomeConnect/refresh_token.json")) {
       fs.unlinkSync("./modules/MMM-HomeConnect/refresh_token.json");
