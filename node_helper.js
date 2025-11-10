@@ -13,11 +13,11 @@ const globalSession = {
   MIN_AUTH_INTERVAL: 60000
 };
 
-async function initiateDeviceFlow(clientId) {
+async function initiateDeviceFlow (clientId) {
   try {
     const response = await fetch("https://api.home-connect.com/security/oauth/device_authorization", {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      headers: {"Content-Type": "application/x-www-form-urlencoded"},
       body: `client_id=${clientId}`
     });
 
@@ -35,7 +35,7 @@ async function initiateDeviceFlow(clientId) {
   }
 }
 
-async function pollForToken(clientId, clientSecret, deviceCode, interval = 5, maxAttempts = 60, sendNotification) {
+async function pollForToken (clientId, clientSecret, deviceCode, interval = 5, maxAttempts = 60, sendNotification) {
   return new Promise((resolve, reject) => {
     let attempts = 0;
     let currentInterval = Math.max(interval, 5);
@@ -61,7 +61,7 @@ async function pollForToken(clientId, clientSecret, deviceCode, interval = 5, ma
 
         const response = await fetch("https://api.home-connect.com/security/oauth/token", {
           method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: {"Content-Type": "application/x-www-form-urlencoded"},
           body: `grant_type=device_code&device_code=${deviceCode}&client_id=${clientId}&client_secret=${clientSecret}`
         });
 
@@ -121,7 +121,7 @@ async function pollForToken(clientId, clientSecret, deviceCode, interval = 5, ma
   });
 }
 
-async function headlessAuth(clientId, clientSecret, sendNotification) {
+async function headlessAuth (clientId, clientSecret, sendNotification) {
   try {
     console.log("🚀 Starting headless authentication using Device Flow...");
     const deviceAuth = await initiateDeviceFlow(clientId);
@@ -207,7 +207,7 @@ module.exports = NodeHelper.create({
         if (!this.configReceived) {
           this.configReceived = true;
           this.config = payload;
-          //setConfig(payload);
+          // setConfig(payload);
 
           console.log("🔧 use_headless_auth:", this.config.use_headless_auth);
 
@@ -244,24 +244,22 @@ module.exports = NodeHelper.create({
           });
 
           this.checkTokenAndInitialize();
-        } else {
-          if (globalSession.isAuthenticated && this.hc) {
-            this.sendSocketNotification("INIT_STATUS", {
-              status: "complete",
-              message: "Bereits initialisiert",
-              instanceId: this.instanceId
-            });
+        } else if (globalSession.isAuthenticated && this.hc) {
+          this.sendSocketNotification("INIT_STATUS", {
+            status: "complete",
+            message: "Bereits initialisiert",
+            instanceId: this.instanceId
+          });
 
-            setTimeout(() => {
-              this.broadcastDevices();
-            }, 500);
-          } else if (globalSession.isAuthenticating) {
-            this.sendSocketNotification("INIT_STATUS", {
-              status: "auth_in_progress",
-              message: "Authentifizierung läuft...",
-              instanceId: this.instanceId
-            });
-          }
+          setTimeout(() => {
+            this.broadcastDevices();
+          }, 500);
+        } else if (globalSession.isAuthenticating) {
+          this.sendSocketNotification("INIT_STATUS", {
+            status: "auth_in_progress",
+            message: "Authentifizierung läuft...",
+            instanceId: this.instanceId
+          });
         }
         break;
 
@@ -582,7 +580,7 @@ module.exports = NodeHelper.create({
           console.log(`📱 Processing device ${index + 1}: ${device.name} (${device.haId})`);
           _self.devices.set(device.haId, device);
 
-          if (device.connected == true) {
+          if (device.connected === true) {
             console.log(`🔗 Device ${device.name} is connected - fetching status`);
 
             _self.hc.command("status", "get_status", device.haId).then((status_result) => {
@@ -625,7 +623,7 @@ module.exports = NodeHelper.create({
         }
 
         const array = [..._self.devices.entries()];
-        let sortedArray = array.sort((a, b) => (a[1].name > b[1].name ? 1 : -1));
+        const sortedArray = array.sort((a, b) => a[1].name > b[1].name ? 1 : -1);
         _self.devices = new Map(sortedArray);
 
         console.log("✅ Device processing complete - broadcasting to frontend");
@@ -677,7 +675,7 @@ module.exports = NodeHelper.create({
     this.checkTokenAndInitialize();
   },
 
-  deviceEvent(data) {
+  deviceEvent (data) {
     const _self = this;
     try {
       const eventObj = JSON.parse(data.data);
@@ -693,22 +691,22 @@ module.exports = NodeHelper.create({
     }
   },
 
-  parseEvent(event, device) {
+  parseEvent (event, device) {
     if (!device) {
       return;
     }
 
-    if (event.key == "BSH.Common.Option.RemainingProgramTime") {
+    if (event.key === "BSH.Common.Option.RemainingProgramTime") {
       device.RemainingProgramTime = event.value;
     } else if (event.key === "BSH.Common.Option.ProgramProgress") {
       device.ProgramProgress = event.value;
     } else if (event.key === "BSH.Common.Status.OperationState") {
-      if (event.value == "BSH.Common.EnumType.OperationState.Finished") {
+      if (event.value === "BSH.Common.EnumType.OperationState.Finished") {
         device.RemainingProgramTime = 0;
       }
     } else if (event.key === "Cooking.Common.Setting.Lighting") {
       device.Lighting = event.value;
-    } else if (event.key == "BSH.Common.Setting.PowerState") {
+    } else if (event.key === "BSH.Common.Setting.PowerState") {
       if (event.value === "BSH.Common.EnumType.PowerState.On") {
         device.PowerState = "On";
       } else if (event.value === "BSH.Common.EnumType.PowerState.Standby") {
@@ -716,7 +714,7 @@ module.exports = NodeHelper.create({
       } else if (event.value === "BSH.Common.EnumType.PowerState.Off") {
         device.PowerState = "Off";
       }
-    } else if (event.key == "BSH.Common.Status.DoorState") {
+    } else if (event.key === "BSH.Common.Status.DoorState") {
       if (event.value === "BSH.Common.EnumType.DoorState.Open") {
         device.DoorState = "Open";
       } else if (event.value === "BSH.Common.EnumType.DoorState.Closed") {

@@ -19,11 +19,11 @@ Module.register("MMM-HomeConnect", {
     updateFrequency: 1000 * 60 * 60
   },
 
-  init() {
+  init () {
     Log.log(`${this.name} is in init!`);
   },
 
-  start() {
+  start () {
     Log.log(`${this.name} is starting!`);
 
     // Generate a unique instance ID
@@ -36,20 +36,20 @@ Module.register("MMM-HomeConnect", {
     }, this.config.updateFrequency);
   },
 
-  loaded(callback) {
+  loaded (callback) {
     Log.log(`${this.name} is loaded!`);
     callback();
   },
 
-  getScripts() {
+  getScripts () {
     return [];
   },
 
-  getStyles() {
+  getStyles () {
     return ["MMM-HomeConnect.css"];
   },
 
-  getTranslations() {
+  getTranslations () {
     return {
       en: "translations/en.json",
       de: "translations/de.json",
@@ -57,11 +57,11 @@ Module.register("MMM-HomeConnect", {
     };
   },
 
-  getHeader() {
+  getHeader () {
     return this.translate("HEADER_TITLE");
   },
 
-  notificationReceived(notification, payload, sender) {
+  notificationReceived (notification, payload, sender) {
     if (notification === "ALL_MODULES_STARTED") {
       // Send config with instanceId
       this.sendSocketNotification("CONFIG", {
@@ -71,7 +71,7 @@ Module.register("MMM-HomeConnect", {
     }
   },
 
-  socketNotificationReceived(notification, payload) {
+  socketNotificationReceived (notification, payload) {
     // Only respond to messages for this instance (if instanceId present)
     if (payload && payload.instanceId && payload.instanceId !== this.instanceId) {
       return;
@@ -119,13 +119,13 @@ Module.register("MMM-HomeConnect", {
     }
   },
 
-  suspend() {
+  suspend () {
   },
 
-  resume() {
+  resume () {
   },
 
-  getDom() {
+  getDom () {
     const div = document.createElement("div");
     let wrapper = "";
     const _self = this;
@@ -149,7 +149,7 @@ Module.register("MMM-HomeConnect", {
     }
 
     // Show loading message if no devices yet
-    if (!this.devices || this.devices.length == 0) {
+    if (!this.devices || this.devices.length === 0) {
       if (this.config.use_headless_auth) {
         div.innerHTML = "<div class='small'>" +
           `<i class='fa fa-cog fa-spin'></i> ${_self.translate("SESSION_BASED_AUTH")}<br>` +
@@ -234,14 +234,14 @@ Module.register("MMM-HomeConnect", {
       }
     });
 
-    if (wrapper == "") {
+    if (wrapper === "") {
       wrapper = `<div class='dimmed small'>${_self.translate("NO_ACTIVE_APPLIANCES")}</div>`;
     }
     div.innerHTML = wrapper;
     return div;
   },
 
-  getAuthHTML() {
+  getAuthHTML () {
     let html = "";
     html += "<div class='auth-container'>";
     html += `<div class='auth-header'>🔐 ${this.translate("AUTH_TITLE")}</div>`;
@@ -277,7 +277,7 @@ Module.register("MMM-HomeConnect", {
     return html;
   },
 
-  getAuthStatusHTML() {
+  getAuthStatusHTML () {
     let html = "";
     html += "<div class='auth-container'>";
     html += `<div class='auth-header'>⏳ ${this.translate("AUTH_STATUS_WAITING")}</div>`;
@@ -303,7 +303,7 @@ Module.register("MMM-HomeConnect", {
     return html;
   },
 
-  getAuthErrorHTML() {
+  getAuthErrorHTML () {
     let html = "";
     html += "<div class='auth-container error'>";
     html += `<div class='auth-header'>❌ ${this.translate("AUTH_FAILED_TITLE")}</div>`;
